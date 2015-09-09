@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+	body {
+    overflow: hidden;
+}
+</style>
+<script type="text/javascript" src="http://aimg.xingcloud.com/bdh.js"></script></head>
+
+<body>
+<script src="js/three.min.js"></script>
+<script src="js/OrbitControls.js">
+
+</script>
+<script src="js/MarchingCubes.js"></script>
+<script>
+var camera, scene, renderer;
+var geometry, material, mesh, helper, cube;
+var scale=50;
+var clock = new THREE.Clock();
+init();
+animate();
+
+function init() {
+
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+  //  camera.position.z = 1000;
+
+    scene = new THREE.Scene();
+    material = new THREE.MeshBasicMaterial({
+        color: 0xffff00,
+        //wireframe: true
+    });
+	resolution=10;
+    mesh =  new THREE.MarchingCubes( resolution, material, true, false );
+	mesh.scale.set( scale,scale, scale );
+    mesh.visible = true;
+    scene.add(mesh);
+    updateCubes( mesh, 0, 1);
+	console.log("here");
+  //  helper = new THREE.WireframeHelper( mesh );
+  //  helper.material.color.set( 0xffffff );
+   // helper.visible = true;
+   // scene.add( helper );
+
+  /*  cube = new THREE.BoxHelper( mesh );
+    cube.material.color.set( 0x00ff00 );
+    scene.add( cube );
+*/
+    renderer = new  THREE.WebGLRenderer( {antialias:true} );
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    document.body.appendChild(renderer.domElement);
+
+}
+function updateCubes( object, time, ballnumber, floor, wallx, wallz ) 
+	{
+					//console.log("updatemtb");
+				object.reset();	
+				// fill the field with some metaballs	
+				var i, ballx, bally, ballz, subtract, strength;
+				dt=clock.getDelta();
+				dt*=0.01;
+				subtract = 12;
+		
+				
+				object.addBall(0,0,0, 0.5, subtract );	
+					
+		
+				
+	}
+	var start = Date.now();
+function animate() {
+
+    // note: three.js includes requestAnimationFrame shim
+    requestAnimationFrame(animate);
+
+  //  mesh.rotation.x += 0.01;
+   // mesh.rotation.y += 0.02;
+	updateCubes( mesh, .0005 * ( Date.now() - start ),1 );
+    renderer.render(scene, camera);
+
+}
+
+</script>
+</body>
+
+</html>

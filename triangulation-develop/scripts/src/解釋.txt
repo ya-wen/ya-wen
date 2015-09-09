@@ -1,0 +1,18 @@
+process
+	 blur, ->三角形細碎程度
+	 triangulate, ->input 4 數值為介面的四個拉霸數值  output 三角形
+	 detectEdges, ->取得邊上的點
+	 getEdgePoints, ->取得新的隨機向量
+	 getRandomVertices, 
+	 greyscale 
+dragdrop
+	
+controls
+export_button
+import_button
+random_button
+image
+file
+imgur
+intro
+cam

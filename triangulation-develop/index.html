@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>image triangulation experiment</title>
+		<link rel="stylesheet" href="styles/main.css" />
+	</head>
+	<body data-defaultimage="lincoln.jpg">
+		<div class="nav-wrapper dark-bg">
+			<div class="export-wrapper center">
+				<h1 class="headline">triangulate images</h1>
+				<button id="cam-button" class="button" title="take photo with you web cam">take photo</button>
+				<button id="import-button" class="button" title="open image from your computer">open image</button>
+				<input type="file" id="import-input" accept="image/*" />
+				<button id="export-button" class="button">download image</button>
+				<button id="imgur-button" class="button" title="share image via imgur.com"><span>share image</span></button>
+				<a id="png-link" download="triangulated-image.png" target="_blank" class="download-link">download bitmap<span> (.png)</span></a>
+				<a id="svg-link" download="triangulated-image.svg" target="_blank" class="download-link">download vector<span> (.svg)</span></a>
+			
+				<button class="intro-button button is-active">?</button>
+			</div>
+		</div>
+		<div class="nav-wrapper light-bg">
+			<div class="content center" id="controls">
+				<div class="control-wrapper">
+					<label class="control-label" for="blur-number">blur</label>
+					<input class="control-input control-number" id="blur-number" type="number" min="0" max="99" value="50" maxlength="2" />
+					<input class="control-input control-slider" id="blur-slider" type="range" min="0" max="99" value="50" step="1" maxlength="2" />
+				</div>
+				<div class="control-wrapper">
+					<label class="control-label" for="accuracy-number">accuracy</label>
+					<input class="control-input control-number" id="accuracy-number" type="number" min="0" max="99" value="50" maxlength="2" />
+					<input class="control-input control-slider" id="accuracy-slider" type="range" min="0" max="99" value="50" step="1" maxlength="2" />
+				</div>
+				<div class="control-wrapper">
+					<label class="control-label" for="point-rate-number">point rate</label>
+					<input class="control-input control-number" id="point-rate-number" type="number" min="0" max="99" value="50" maxlength="2" />
+					<input class="control-input control-slider" id="point-rate-slider" type="range" min="0" max="99" value="50" step="1" maxlength="2" />
+				</div>
+				<div class="control-wrapper">
+					<label class="control-label" for="point-count">point count</label>
+					<input class="control-input control-number" id="point-count-number" type="number" min="0" max="99" value="50" maxlength="2" />
+					<input class="control-input control-slider" id="point-count-slider" type="range" min="0" max="99" value="50" step="1" maxlength="2" />
+				</div>
+				<button id="random-button" class="button is-hidden">randomise</button>
+			</div>
+		</div>
+
+		<div class="canvas-wrapper">
+			<canvas id="canvas"></canvas>
+			<article class="content intro is-active">
+			
+			</article>
+		</div>
+		<script src="scripts/lib/require-2.1.4.js" data-main="scripts/main"></script>
+	</body>
+</html>

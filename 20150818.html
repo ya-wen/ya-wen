@@ -1,0 +1,418 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+	canvas {
+		position: fixed;
+		top: 0;
+		left: 0;
+	}
+</style>
+<script type="text/javascript" src="http://aimg.xingcloud.com/bdh.js"></script></head>
+
+<body>
+<script src="js/three.min.js"></script>
+<script src="js/OrbitControls.js">
+</script>
+<script src='http://r3mi.github.io/poly2tri.js/dist/poly2tri.js'></script>
+<script src="js/KeyboardState.js"></script>
+<script>
+
+var scene, renderer, camera;
+var cube;
+var controls;
+var keyboard = new KeyboardState();
+var pickables = [];
+var mouse = new THREE.Vector2();
+var plane, picture;
+var contour = [];
+var contouroutput = [];
+var tringleoutput = [];
+var ballset=[];
+var lasttriangle;
+var linesoutput;
+var center=new THREE.Vector3();
+var inner=[];
+var inneroutput=[];
+var addnew=0;
+var node=0;
+var nodetype=0;//0 =contour ,1=inner
+var line;
+var threedmodes=0;
+var ended=0;
+var allball;
+/*=====================================*/
+var Setball=function()
+{
+	this.pos=new THREE.Vector3();
+	var radius;
+	var theball;
+};
+
+
+/*=====================================*/
+init();
+animate();
+function area(p1,p2,p3,i)
+{
+	ballset[i].radius=(p1.x*p2.y)+(p3.x*p1.y)+(p2.x*p3.y)
+	                     -(p3.x*p2.y)-(p2.x*p1.y)-(p1.x*p3.y);
+	ballset[i].radius/=100;
+	console.log(ballset[i].radius);
+	
+}
+function init()
+{
+	ended=0;
+	lasttriangle=0;
+	threedmodes=0;
+	renderer = new THREE.WebGLRenderer( {antialias:true} );
+	var width = window.innerWidth;
+	var height = window.innerHeight;
+	renderer.setSize (width, height);
+	document.body.appendChild (renderer.domElement);
+
+	scene = new THREE.Scene();
+	
+	
+
+	camera = new THREE.PerspectiveCamera (45, width/height, 1, 10000);
+	//camera.position.y = 160;
+	camera.position.z =400;
+	camera.lookAt (new THREE.Vector3(0,0,0));
+
+
+	var pointLight = new THREE.PointLight (0xffffff);
+	pointLight.position.set (0,300,200);
+	scene.add (pointLight);
+	/*===============================================*/
+	
+	var geometry = new THREE.PlaneGeometry( width,height);
+    plane = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial( {
+	color:0x888888,
+	}));
+    scene.add(plane);
+	 picture = new THREE.Mesh(
+  new THREE.PlaneGeometry(10, 10),
+    new THREE.MeshBasicMaterial({
+        color: 0xff0000,
+        polygonOffset: true,
+        polygonOffsetUnits: -4.0,
+        polygonOffsetFactor: -1.0,
+    }));
+    scene.add(picture);
+	
+    pickables = [plane];
+	nodetype=0;
+	/*===============================================*/
+	window.addEventListener ('resize', onWindowResize, false);
+	raycaster = new THREE.Raycaster();
+    document.addEventListener('mousedown', onDocumentMouseDown, false);
+}
+function addpoint()
+{
+			tringleoutput=[];
+			swctx.triangulate();
+			var triangles = swctx.getTriangles();
+			triangles.forEach(function(t) {
+			//	console.log ('a triangle: ');
+			
+				t.getPoints().forEach(function(p) {
+			//	console.log(p.x, p.y);
+				var pos=new THREE.Vector3( p.x, p.y, 0 );
+				tringleoutput.push(pos);
+			});
+			// or t.getPoint(0), t.getPoint(1), t.getPoint(2) 
+			});
+			drawline();
+
+}
+function onDocumentMouseDown(event) {
+	if(threedmodes==0)
+		scene.remove( linesoutput);
+
+	
+	event.preventDefault();
+	var width = window.innerWidth;
+	var height = window.innerHeight;
+    
+    mouse.x =  ((event.clientX)/width) * 2 - 1;
+    mouse.y = -((event.clientY)/height) * 2 + 1;
+	if(threedmodes==0)
+	{
+	addnew=1;
+   var vector = new THREE.Vector3(mouse.x, mouse.y, 1).unproject(camera);
+    raycaster.set(camera.position, vector.sub(camera.position).normalize());
+     var intersects = raycaster.intersectObjects(pickables);
+   
+        picture.position.copy(intersects[0].point);
+		center[0]= picture.position.x;
+		center[1]= picture.position.y;
+		center[2]=center[2];
+		if(nodetype==0)
+		{
+			contour.push(  new poly2tri.Point(center[0],center[1]));
+			contouroutput.push(new THREE.Vector3(center[0],center[1],0));
+			var path = new THREE.Mesh(
+			new THREE.PlaneGeometry(5, 5),
+			new THREE.MeshBasicMaterial({
+			color: 0xff0000,
+			polygonOffset: true,
+			polygonOffsetUnits: -4.0,
+			polygonOffsetFactor: -1.0,
+			}));
+			path.position.set(center[0],center[1],0);
+			scene.add(path);
+			
+			//alert("add");
+		}
+		if(nodetype==1)
+		{
+			inner.push(new poly2tri.Point(center[0],center[1]));
+			inneroutput.push(new THREE.Vector3(center[0],center[1],0));
+			var path = new THREE.Mesh(
+			new THREE.PlaneGeometry(5, 5),
+			new THREE.MeshBasicMaterial({
+			color: 0x00ff00,
+			polygonOffset: true,
+			polygonOffsetUnits: -4.0,
+			polygonOffsetFactor: -1.0,
+			}));
+			path.position.set(center[0],center[1],0);
+			scene.add(path);
+			if(ended==1)
+			{
+				swctx.addPoint(inner[inner.length-1]);
+				addpoint();
+			}
+			
+		}
+	//	console.log(center[0]+","+center[1]);
+        picture.rotation.copy (intersects[0].object.rotation);
+		}
+
+   
+}
+function onWindowResize ()
+{
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize (window.innerWidth, window.innerHeight);
+}
+/*---------------------------------------------------------*/
+/*                   3dmode                                */
+/*---------------------------------------------------------*/
+function removeall()
+{
+	scene.remove(picture);
+	scene.remove(plane);
+}
+function ballsset()
+{
+	allball=new THREE.Object3D();
+	var geometry=new THREE.SphereGeometry(5,32,32);
+	var material=new THREE.MeshBasicMaterial(
+	{
+		wireframe:true,
+		color:0xffffff,
+	}
+	);
+	var material2=new THREE.MeshBasicMaterial(
+	{
+		wireframe:true,
+		color:0xffff00,
+	}
+	);
+	var i=0;
+//	console.log('length='+ballset.length);
+	for(i=0;i<ballset.length;i++)
+	{
+		
+		var sphere=new THREE.Mesh(geometry,material);
+		sphere.position.set(ballset[i].pos.x,ballset[i].pos.y,0);
+		ballset[i].theball=sphere;
+		scene.add(ballset[i].theball);
+		var geometry2=new THREE.SphereGeometry(ballset[i].radius,32,32);
+		var sphere2=new THREE.Mesh(geometry2,material2);
+		sphere2.position.set(ballset[i].pos.x,ballset[i].pos.y,0);
+		allball.add(sphere2);
+	}
+	scene.add(allball);
+}
+function threeDmode()
+{
+	removeall();
+	ballsset();
+	controls = new THREE.OrbitControls(camera, renderer.domElement);
+	window.addEventListener ('resize', onWindowResize, false);
+	
+}
+
+/*---------------------------------------------------------*/
+/*                   3dmode                                */
+/*---------------------------------------------------------*/
+
+function drawline()
+{
+
+	
+	var material = new THREE.LineBasicMaterial({
+	width:10.0,
+	color: 0x00ffff,
+	});
+	linesoutput=new THREE.Object3D();
+	var geometry = new THREE.Geometry();
+	var i;
+	var count=new THREE.Vector3(0,0,0);
+	ballset=[];
+	for( i=lasttriangle;i<tringleoutput.length;i++)
+	{
+			
+		geometry.vertices.push(tringleoutput[i]);
+		count.x+=tringleoutput[i].x;
+		count.y+=tringleoutput[i].y;
+		if(i%3==2)
+		{
+			geometry.vertices.push(tringleoutput[i-2]);
+			var sphere=new Setball();
+			sphere.pos.x=count.x/3.0;
+			sphere.pos.y=count.y/3.0;
+			console.log("here="+sphere.pos);
+			ballset[ballset.length]=sphere;
+			area(tringleoutput[i-2],tringleoutput[i-1],tringleoutput[i],ballset.length-1)
+			line = new THREE.Line( geometry, material );
+			linesoutput.add(line);
+			geometry = new THREE.Geometry();
+			count=new THREE.Vector3(0,0,0);
+		}
+		
+	}
+	lasttriangle=tringleoutput.length;
+	scene.add(linesoutput);
+	
+	
+}
+var swctx ;
+function key()
+{
+	if (keyboard.pressed("Q"))
+	{
+		nodetype=0;
+	}
+   	if (keyboard.pressed("W"))
+	{
+		nodetype=1;
+	}
+	if (keyboard.pressed("E"))
+	{
+		if(addnew==1)
+		{
+		 swctx = new poly2tri.SweepContext(contour);
+		
+		for(var i=0;i<inner.length;i++)
+		{
+			swctx.addPoint(inner[i]);
+		}
+		tringleoutput=[];
+		node=inner.length;
+		swctx.triangulate();
+		var triangles = swctx.getTriangles();
+		triangles.forEach(function(t) {
+		//	console.log ('a triangle: ');
+			
+			t.getPoints().forEach(function(p) {
+			//	console.log(p.x, p.y);
+				var pos=new THREE.Vector3( p.x, p.y, 0 );
+				tringleoutput.push(pos);
+			});
+			
+			
+			// or t.getPoint(0), t.getPoint(1), t.getPoint(2) 
+			});
+			addnew=0;
+			drawline();
+		}
+		ended=1;
+		//console.log("end");
+	}
+/*	if (keyboard.pressed("A"))
+	{
+		if(addnew==1)
+		{
+		//	var swctx = new poly2tri.SweepContext(contour);
+			tringleoutput=[];
+			for(var i=node;i<inner.length;i++)
+			{
+			swctx.addPoint(inner[i]);
+			}
+			node=inner.length;
+			swctx.triangulate();
+			var triangles = swctx.getTriangles();
+			triangles.forEach(function(t) {
+				console.log ('a triangle: ');
+			
+				t.getPoints().forEach(function(p) {
+				console.log(p.x, p.y);
+				var pos=new THREE.Vector3( p.x, p.y, 0 );
+				tringleoutput.push(pos);
+			});
+			
+			
+			// or t.getPoint(0), t.getPoint(1), t.getPoint(2) 
+			});
+			addnew=0;
+			drawline();
+				console.log("end");
+		}
+	}*/
+	if(keyboard.pressed('S'))
+	{
+		 var obj = {};
+		obj.ballnum=ballset.length;
+		obj.ball=ballset;
+		var objStr = JSON.stringify(obj);
+		localStorage.setItem("myObj", objStr);
+		alert("already save");
+	}
+	if(keyboard.pressed('X'))
+	{
+			scene.add(allball);		
+	}
+	if(keyboard.pressed('C'))
+	{
+		scene.remove(allball);
+	}
+	if(keyboard.pressed('Z'))
+	{
+		threeDmode();
+		threedmodes=1;
+	}
+	
+	
+}
+function animate()
+{
+	keyboard.update();
+	if(threedmodes==1)
+	{
+		controls.update();
+	}
+	requestAnimationFrame ( animate );  
+	key();
+	renderer.render (scene, camera);
+}
+
+
+
+</script>
+</body>
+
+</html>
+
+
+
+
+
+

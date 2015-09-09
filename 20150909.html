@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Perlin noise | Fireball explosion</title>
+        <meta charset="utf-8">
+    </head>
+
+    <body>
+        <div id="container"></div>
+    </body>
+	<script src="js/three.min.js"></script>
+
+	<script src="js/Detector.js"></script>
+	<script src="js/Stats.js"></script>
+	<script src="js/MarchingCubes.js"></script>
+	<script src="js/KeyboardState.js"></script>
+   
+
+    <script type="text/javascript" id="mainCode">
+    var container, 
+    renderer, 
+    scene, 
+    camera, 
+    mesh,  mesh2, mesh3,
+    fov = 30;
+	/*================*/
+	var ballnumber=1;
+	var clock = new THREE.Clock();
+	/*===============*/
+	var stats;
+	var material;
+	var keyboard = new KeyboardState();
+	var Metapos=[];
+		
+	var scales=50;
+	var threshold=0.0;
+	/*=======================================================*/
+	var Ballsetcenter=function()
+			{
+				this.pos=new THREE.Vector3();
+				var theta;
+				var radius;
+				var R;
+				var ballnoise;
+			};
+	var Ballsetnoise=function()
+			{
+				this.pos=new THREE.Vector3();
+				var radius;
+			};
+	/*===============*/
+	init();
+	animation();
+	function screen()
+	{
+		container = document.getElementById( "container" );
+		scene = new THREE.Scene();
+		camera = new THREE.PerspectiveCamera( 
+			fov, 
+			window.innerWidth / window.innerHeight, 
+			1, 
+			10000 );
+		camera.target = new THREE.Vector3( 0, 0, 0 );
+
+		scene.add( camera );
+		renderer = new THREE.WebGLRenderer();
+		renderer.setSize( window.innerWidth, window.innerHeight );
+		renderer.setClearColor(0x0c93e4);
+	}
+	function ballnumberinit()
+	{
+	
+		ballnumber=2;
+		//for ( i = 0; i < ballnumber; i++ ) {
+				var setMeta=new Ballsetcenter();
+				setMeta.theta=  Math.PI*(2/(Math.floor(Math.random()*32+1)-16));
+				setMeta.R=Math.floor(Math.random()*30+1)/100;
+				//console.log(setMeta.theta,setMeta.R);
+				setMeta.pos.x=0.5;
+				setMeta.pos.y=0.5;
+				setMeta.pos.z=0.5;
+				setMeta.radius=0.2;
+				Metapos.push(setMeta);
+				console.log("set ball1");
+				var setMeta1=new Ballsetcenter();
+				setMeta1.theta=  Math.PI*(2/(Math.floor(Math.random()*32+1)-16));
+				setMeta1.R=Math.floor(Math.random()*30+1)/100;
+				setMeta1.pos.x=-0.5;
+				setMeta1.pos.y=0.5;
+				setMeta1.pos.z=0.5;
+				setMeta1.radius=0.2;
+				Metapos.push(setMeta1);
+				console.log("set ball2");
+		//}
+	}
+	function updateCubes( object, time, ballnumber, floor, wallx, wallz ) 
+	{
+			object.reset();	
+			var i, ballx, bally, ballz, subtract, strength;
+			dt=clock.getDelta();
+			dt*=0.01;
+			subtract = 12;
+			for ( i = 0; i < ballnumber; i++ ) {
+				ballx = Metapos[i].pos.x;
+				bally = Metapos[i].pos.y; 
+				ballz = Metapos[i].pos.z;
+				
+				object.addBall( ballx, bally, ballz, Metapos[i].radius+threshold, subtract);	
+					
+			}
+				
+	}
+	function allevent()
+	{
+		container.appendChild( renderer.domElement );
+		container.addEventListener( 'mousedown', onMouseDown, false );
+		container.addEventListener( 'mousemove', onMouseMove, false );
+		container.addEventListener( 'mouseup', onMouseUp, false );
+		container.addEventListener( 'mousewheel', onMouseWheel, false );
+		container.addEventListener( 'DOMMouseScroll', onMouseWheel, false);
+		window.addEventListener( 'resize', onWindowResize, false );
+	
+		stats = new Stats();
+		stats.domElement.style.position = 'absolute';
+		stats.domElement.style.top = '0px';
+		//container.appendChild( stats.domElement );
+	}
+	
+	function MTB() {
+		material=new THREE.MeshBasicMaterial({
+		color:0xffffff,
+		wireframe:true
+		});
+		resolution =10;
+		effect = new THREE.MarchingCubes( resolution, material, true, false );
+		effect.scale.set( scales,scales, scales );
+		scene.add( effect );
+		updateCubes( effect, 0, ballnumber );
+	}		
+			
+	function init()
+	{
+		screen();
+		ballnumberinit();
+		MTB();
+		allevent();
+	}
+
+	function onWindowResize() {
+		renderer.setSize( window.innerWidth,window.innerHeight );
+	}
+/*=========================*/
+/*   	MOUSE EVENT        */
+/*=========================*/
+	function onMouseWheel( event ) {
+		if ( event.wheelDeltaY ) {
+			fov -= event.wheelDeltaY * 0.01;
+		// Opera / Explorer 9
+		} else if ( event.wheelDelta ) {
+			fov -= event.wheelDelta * 0.05;
+		// Firefox
+		} else if ( event.detail ) {
+			fov += event.detail * 1.0;
+		}
+		camera.projectionMatrix.makePerspective( fov, window.innerWidth / window.innerHeight, 1, 1100 );
+	}
+	var onMouseDownMouseX = 0, onMouseDownMouseY = 0,
+		lon = 0, onMouseDownLon = 0,
+		lat = 0, onMouseDownLat = 0,
+		phi = 0, theta = 0;
+		lat = 15, isUserInteracting = false;
+	function onMouseDown( event ) {
+		event.preventDefault();
+		isUserInteracting = true;
+		onPointerDownPointerX = event.clientX;
+		onPointerDownPointerY = event.clientY;
+		onPointerDownLon = lon;
+		onPointerDownLat = lat;
+	}
+	function onMouseMove( e ) {
+		if ( isUserInteracting ) {
+		lon = ( e.clientX - onPointerDownPointerX ) * 0.1 + onPointerDownLon;
+		lat = ( e.clientY - onPointerDownPointerY ) * 0.1 + onPointerDownLat;
+		}
+	}
+
+	function onMouseUp( event ) {
+		isUserInteracting = false;
+	}
+	var scale=0;
+	var start = Date.now();
+	function animation() {
+		keyboard.update();
+		scale += .005;
+		scale %= 2;
+		
+		lat = Math.max( - 85, Math.min( 85, lat ) );
+		phi = ( 90 - lat ) * Math.PI / 180;
+		theta = lon * Math.PI / 180;
+	
+		camera.position.x = 100 * Math.sin( phi ) * Math.cos( theta );
+		camera.position.y = 100 * Math.cos( phi );
+		camera.position.z = 100 * Math.sin( phi ) * Math.sin( theta );
+		camera.lookAt( scene.position );
+		updateCubes( effect, .0005 * ( Date.now() - start ), ballnumber );
+		renderer.render( scene, camera );
+		stats.update();
+		requestAnimationFrame( animation );
+}
+    </script>
+
+</html>
+
+
+
+
