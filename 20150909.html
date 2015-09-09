@@ -70,7 +70,7 @@
 	function ballnumberinit()
 	{
 	
-		ballnumber=2;
+		ballnumber=1;
 		//for ( i = 0; i < ballnumber; i++ ) {
 				var setMeta=new Ballsetcenter();
 				setMeta.theta=  Math.PI*(2/(Math.floor(Math.random()*32+1)-16));
@@ -82,15 +82,6 @@
 				setMeta.radius=0.2;
 				Metapos.push(setMeta);
 				console.log("set ball1");
-				var setMeta1=new Ballsetcenter();
-				setMeta1.theta=  Math.PI*(2/(Math.floor(Math.random()*32+1)-16));
-				setMeta1.R=Math.floor(Math.random()*30+1)/100;
-				setMeta1.pos.x=-0.5;
-				setMeta1.pos.y=0.5;
-				setMeta1.pos.z=0.5;
-				setMeta1.radius=0.2;
-				Metapos.push(setMeta1);
-				console.log("set ball2");
 		//}
 	}
 	function updateCubes( object, time, ballnumber, floor, wallx, wallz ) 
